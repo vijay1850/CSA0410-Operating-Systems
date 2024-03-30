@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_FRAMES 3
+typedef struct {
+    int pageNumber;
+    bool valid;
+    int lastUsed;  
+} Page;
+int main() {
+    int pageRequests[] = {1, 2, 3, 4, 1, 5, 2, 4, 3, 5};
+    int numRequests = sizeof(pageRequests) / sizeof(pageRequests[0]);
+    Page frames[MAX_FRAMES]; 
+    int numFaults = 0; 
+        for (int i = 0; i < MAX_FRAMES; ++i) {
+        frames[i].pageNumber = -1; 
+        frames[i].valid = false;  
+        frames[i].lastUsed = 0;   
+    }
+    for (int i = 0; i < numRequests; ++i) {
+        int requestedPage = pageRequests[i];
+        bool pageFound = false;
+            for (int j = 0; j < MAX_FRAMES; ++j) {
+            if (frames[j].pageNumber == requestedPage && frames[j].valid) {
+                pageFound = true;                
+                frames[j].lastUsed = i + 1;
+                break;
+            }
+        }
+            if (!pageFound) {
+            ++numFaults;
+            int lruIndex = 0;
+            for (int j = 1; j < MAX_FRAMES; ++j) {
+                if (frames[j].lastUsed < frames[lruIndex].lastUsed) {
+                    lruIndex = j;
+                }
+            }
+            frames[lruIndex].pageNumber = requestedPage;
+            frames[lruIndex].valid = true;
+            frames[lruIndex].lastUsed = i + 1;
+        }
+        printf("Page Request: %d | Memory State: ", requestedPage);
+        for (int j = 0; j < MAX_FRAMES; ++j) {
+            if (frames[j].valid) {
+                printf("%d ", frames[j].pageNumber);
+            } else {
+                printf("- ");
+            }
+        }
+        printf("\n");
+    }
+        printf("\nTotal Page Faults: %d\n", numFaults);
+    return 0;
+}
