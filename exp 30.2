@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <pthread.h>
+
+#define NUM_THREADS 5
+#define ARRAY_SIZE 10
+
+int array[ARRAY_SIZE] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+int sum = 0;
+
+void *calculateSum(void *arg) {
+    int threadID = *((int *)arg);
+    int partialSum = 0;
+
+    for (int i = threadID * (ARRAY_SIZE / NUM_THREADS); i < (threadID + 1) * (ARRAY_SIZE / NUM_THREADS); ++i) {
+        partialSum += array[i];
+    }
+
+    printf("Thread %d partial sum: %d\n", threadID, partialSum);
+
+    pthread_exit((void *)partialSum);
+}
+
+int main() {
+    pthread_t threads[NUM_THREADS];
+    int threadIDs[NUM_THREADS];
+
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        threadIDs[i] = i;
+        pthread_create(&threads[i], NULL, calculateSum, (void *)&threadIDs[i]);
+    }
+
+    for (int i = 0; i < NUM_THREADS; ++i) {
+        int partialSum;
+        pthread_join(threads[i], (void **)&partialSum);
+        sum += partialSum;
+    }
+
+    printf("Total sum: %d\n", sum);
+
+    return 0;
+}
