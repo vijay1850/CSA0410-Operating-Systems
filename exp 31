@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_FRAMES 3  
+typedef struct {
+    int pageNumber;
+    bool valid;
+} Page;
+int main() {
+    int pageRequests[] = {1, 2, 3, 4, 1, 5, 2, 4, 3, 5};
+    int numRequests = sizeof(pageRequests) / sizeof(pageRequests[0]);
+    Page frames[MAX_FRAMES];
+    int frameIndex = 0;
+    int numFaults = 0; 
+        for (int i = 0; i < MAX_FRAMES; ++i) {
+        frames[i].pageNumber = -1; 
+        frames[i].valid = false;   
+    }
+    for (int i = 0; i < numRequests; ++i) {
+        int requestedPage = pageRequests[i];
+        bool pageFound = false;
+                for (int j = 0; j < MAX_FRAMES; ++j) {
+            if (frames[j].pageNumber == requestedPage && frames[j].valid) {
+                pageFound = true;
+                break;
+            }
+        }
+                if (!pageFound) {
+            ++numFaults;
+            frames[frameIndex].pageNumber = requestedPage;
+            frames[frameIndex].valid = true;
+                        frameIndex = (frameIndex + 1) % MAX_FRAMES;
+        }
+        printf("Page Request: %d | Memory State: ", requestedPage);
+        for (int j = 0; j < MAX_FRAMES; ++j) {
+            if (frames[j].valid) {
+                printf("%d ", frames[j].pageNumber);
+            } else {
+                printf("- ");
+            }
+        }
+        printf("\n");
+    }
+        printf("\nTotal Page Faults: %d\n", numFaults);
+    return 0;
+}
